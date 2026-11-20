@@ -80,9 +80,15 @@ that has such a file.
   about half real errors (ܘܬܪܝܨ for ܘܬܪܝܢ, ܐܩܝܗ for ܐܩܝܡ, ܩܟܒ for ܩܪܒ) and half valid forms (ܕܬܒܥ, ܠܚܡܝ). To read them on the
   scan, run Kraken with ALTO output (`-a`), which keeps the line boxes; cutting lines by projection did not match Kraken's
   line order (the counts differ by up to 6 lines a page).
-- **A second edition as a check**: Bruns-Kirsch 1789 (archive.org `ChroniconSyriacum`, "Chronicon_Syriacum 2", Serto)
-  has the whole chronicle; Kraken's Serto model reads it, and the two readings can be aligned paragraph by paragraph.
-  Where both editions agree, the text is right with high probability; this is the strongest check available.
+- **A second edition as a check** (sample run 20-Nov-2026, `bk_ocr.py`, `cross_check.py`): 10 pages of Bruns-Kirsch 1789
+  (vol. 2, pp. 30-530, Serto; printed page = 637 − leaf) read with Kraken's Serto model and aligned to Bedjan (found by
+  shared word triples: BK 30 ≈ Bedjan 28, BK 530 ≈ Bedjan 491). Only 61% of the 2,188 words agree, and most
+  disagreements are errors of the 1789 reading: the Serto model confuses ܒ and ܟ on this scan (ܟܬܪ for ܒܬܪ, ܟܪ for ܒܪ).
+  So the 1789 text is not a word-by-word reference as it stands. It does confirm Bedjan errors where the two differ by
+  one letter and the 1789 form is the frequent word: 16 such corrections (`data/qa/confirmed.tsv`), all of them real
+  on a read-through (ܙܟܕ → ܘܟܕ, ܫܠܟܐ → ܡܠܟܐ, ܗܪ → ܗܘ, and lost first letters: ܣܐ → ܐܣܐ, ܡܪܘ → ܐܡܪܘ). Rare words are not
+  always errors: Bedjan p. 491 (the Mongols) is full of names. The whole 1789 volume is downloaded by
+  `download_bruns_kirsch.ps1`; a full run needs a better Serto reading first (fine-tune, or fold ܒ/ܟ in the comparison).
 - **Page header and page number**: on the uncropped JPEG 2000 images the facing page shows through above the header
   (p. 30: the header read as the book title, the page number as "86"). Drop the first line (or two) of each page before
   the split, after a check on a sample.

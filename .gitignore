@@ -10,3 +10,5 @@ data/raw/*.zip
 data/test/
 data/qa/sample_sheet.jpg
 data/bruns_kirsch/
+data/bruns_kirsch/*.jpg
+data/bruns_kirsch/raw/

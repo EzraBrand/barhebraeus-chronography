@@ -54,19 +54,24 @@ def align(a, b):
     return pairs[::-1]
 
 
-ref = words(REF)
-pages = sorted((ROOT / "data" / "text").glob("p*.txt"))
-bed = []
-for p in pages:
-    bed += words(p.read_text(encoding="utf-8"))
-pairs = align(ref, bed)
-same = sum(1 for x, y in pairs if x and x == y)
-near = sum(1 for x, y in pairs if x and y and Levenshtein.distance(x, y) <= 1)
-chars = sum(len(x) for x, _ in pairs if x)
-errs = sum(Levenshtein.distance(x, y) for x, y in pairs if x)
-print(f"reference {len(ref)} words; Bedjan pp. {pages[0].stem[1:]}-{pages[-1].stem[1:]}, {len(bed)} words read by Kraken")
-print(f"same word: {same} ({same / len(ref):.0%}); within one letter: {near} ({near / len(ref):.0%}); "
-      f"character difference {errs}/{chars} ({errs / chars:.1%}), counting real variants between the editions as errors")
-for x, y in pairs:
-    if x != y:
-        print(f"  ref {x or '-':14} Bedjan/Kraken {y or '-'}")
+def main() -> None:
+    ref = words(REF)
+    pages = sorted((ROOT / "data" / "text").glob("p*.txt"))
+    bed = []
+    for p in pages:
+        bed += words(p.read_text(encoding="utf-8"))
+    pairs = align(ref, bed)
+    same = sum(1 for x, y in pairs if x and x == y)
+    near = sum(1 for x, y in pairs if x and y and Levenshtein.distance(x, y) <= 1)
+    chars = sum(len(x) for x, _ in pairs if x)
+    errs = sum(Levenshtein.distance(x, y) for x, y in pairs if x)
+    print(f"reference {len(ref)} words; Bedjan pp. {pages[0].stem[1:]}-{pages[-1].stem[1:]}, {len(bed)} words read by Kraken")
+    print(f"same word: {same} ({same / len(ref):.0%}); within one letter: {near} ({near / len(ref):.0%}); "
+          f"character difference {errs}/{chars} ({errs / chars:.1%}), counting real variants between the editions as errors")
+    for x, y in pairs:
+        if x != y:
+            print(f"  ref {x or '-':14} Bedjan/Kraken {y or '-'}")
+
+
+if __name__ == "__main__":
+    main()
