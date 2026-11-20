@@ -12,3 +12,9 @@ data/qa/sample_sheet.jpg
 data/bruns_kirsch/
 data/bruns_kirsch/*.jpg
 data/bruns_kirsch/raw/
+data/ft/alto/
+data/ft/alto_gt/
+data/ft/lines/
+data/ft/model/
+data/ft/smoke/
+data/ft/dirtest/

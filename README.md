@@ -94,6 +94,15 @@ Argon or Opus only for pages with many {OCR?} marks.
   is then read, but wrongly (ܝܕ for ܚܕ). The Serto model did the same on Bochart p. 283 (ܟܫܢܬ for ܒܫܢܬ). Likely fix:
   fine-tune the Qoruyo model (`ketos train`) on a few hundred corrected lines; a first set of corrections can come from
   `line_start.tsv`, where the full word is unique.
+- **Fine-tune, first attempt (20-Nov-2026): worse, not used.** `ft_alto.py` (ALTO with line polygons for the flagged
+  pages; 129 of 165 done, the rest failed silently), `ft_build_alto.py` (corrected ALTO copies: 131 corrected words on 104
+  training pages, 29 on 25 held-out pages), then `ketos -d cpu --workers 2 train -f alto -i SyrEastSyr_01_18.mlmodel
+  --resize union --no-reorder -r 0.0001 -N 4 -q fixed -B 4` (2,967 lines, about 3 hours on the CPU). On the held-out pages
+  (`ketos test -f alto --no-reorder`): base model 67 errors (99.86% characters), fine-tuned 1,004 errors (97.94%); the
+  drop is there from the first epoch, so the training convention probably does not match the base model's (text order
+  with --no-reorder on ALTO, or the codec resize). Rectangular line crops (`ft_build.py`, `-f path`) are worse still: the
+  base model reads them at 17%. Before another attempt, find the base model's training settings (model metadata,
+  `ketos show`, Beth Mardutho's guide) and check that one epoch at learning rate 0 keeps 99.86%.
 - **Suspect words**: `data/qa/suspects.tsv` lists 3,457 words seen once with a frequent form one letter away; 1,685 of them
   differ by one changed letter (the rest are mostly prefixes and endings, i.e. grammar). A random sample of 12 looked
   about half real errors (ܘܬܪܝܨ for ܘܬܪܝܢ, ܐܩܝܗ for ܐܩܝܡ, ܩܟܒ for ܩܪܒ) and half valid forms (ܕܬܒܥ, ܠܚܡܝ). To read them on the
