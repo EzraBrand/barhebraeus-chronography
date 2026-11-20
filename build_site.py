@@ -77,17 +77,20 @@ def page_html(p: int, prev: int | None, nxt: int | None) -> str:
            f"&ext=jpg&reduce=1")
     rows = []
     tr_file = ROOT / "data" / "translation" / f"p{p:03d}.json"
-    if tr_file.exists():
-        # pilot (20-Nov-2026): the page split at its punctuation (segments.py), with an English translation per segment
-        tr = json.loads(tr_file.read_text(encoding="utf-8"))
+    tr = json.loads(tr_file.read_text(encoding="utf-8")) if tr_file.exists() else None
+    if tr and len(segments(p)[0]) != len(tr["segments"]):
+        print(f"p. {p}: {len(segments(p)[0])} segments but {len(tr['segments'])} translations: shown without English")
+        tr = None  # the text changed after the translation, or the model lost the alignment
+    if tr:
+        # the page split at its punctuation (segments.py), with an English translation per segment
         segs, notes = segments(p)
-        assert len(segs) == len(tr["segments"]), f"p. {p}: {len(segs)} segments, {len(tr['segments'])} translations"
+        by = tr.get("by", "a pilot translation by Claude from the OCR text (not checked by a Syriacist)")
         for i, (s, en) in enumerate(list(zip(segs, tr["segments"])) + list(zip(notes, tr.get("notes", []))), 1):
             rows.append(f'<tr><td class="en">{html.escape(en)}</td><td class="heb" lang="he">{html.escape(to_hebrew(s))}</td>'
                         f'<td class="syr" lang="syr">{html.escape(s)}</td><td class="n">{i if i <= len(segs) else "note"}</td></tr>')
         lines = segs
-        unit = (f"{len(segs)} segments, split at the punctuation (. and :), with a pilot English translation by Claude from the "
-                f"OCR text (not checked by a Syriacist); Bedjan&#39;s notes at the end")
+        unit = (f"{len(segs)} segments, split at the punctuation (. and :), with an English translation: {html.escape(by)}; "
+                f"Bedjan&#39;s notes at the end")
     else:
         # every page (20-Nov-2026): split at the punctuation, Hebrew letters on the left, the Syriac on the right
         segs, notes = segments(p)
