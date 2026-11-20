@@ -56,46 +56,58 @@ tr.hl td{background:rgba(226,160,107,.12)}
 """
 
 
+HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="OCR of Bedjan's edition of Barhebraeus' Chronicon Syriacum (1890), with a transliteration into Hebrew letters.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Syriac+Eastern&family=Noto+Serif+Hebrew&display=swap" rel="stylesheet">
+<style>{css}</style></head><body><main>"""
+
+
+def page_html(p: int, prev: int | None, nxt: int | None) -> str:
+    lines = [ln for ln in (TEXT / f"p{p:03d}.txt").read_text(encoding="utf-8").splitlines() if ln.strip()]
+    scan = f"https://archive.org/details/{ITEM}/page/n{leaf(p)}/mode/1up"
+    rows = []
+    for i, ln in enumerate(lines, 1):
+        hl = ' class="hl"' if p == 128 and 18 <= i <= 23 else ""
+        # Hebrew letters on the left, the Syriac original on the right, the line number at the far right
+        rows.append(f'<tr{hl}><td class="heb" lang="he">{html.escape(to_hebrew(ln))}</td>'
+                    f'<td class="syr" lang="syr">{html.escape(ln)}</td><td class="n">{i}</td></tr>')
+    nav = (f'<a href="p{prev:03d}.html">&larr; p. {prev}</a>' if prev else "") + ' <a href="index.html">contents</a> ' +           (f'<a href="p{nxt:03d}.html">p. {nxt} &rarr;</a>' if nxt else "")
+    return (HEAD.format(title=f"Barhebraeus Chronography, p. {p}", css=CSS) +
+            f'<p class="muted"><a href="index.html">Barhebraeus, <i>Chronography</i> (ed. Bedjan, 1890)</a></p>'
+            f'<nav class="pages">{nav}</nav><h2 id="p{p}">Page {p}</h2>'
+            f'<div class="cap">{len(lines)} lines as read by Kraken, not proofread (the page header is line 1; Bedjan&#39;s notes '
+            f'are at the foot) · <a href="{scan}">scan, leaf {leaf(p)}</a></div>'
+            f'<table class="lines"><tbody>{"".join(rows)}</tbody></table><nav class="pages">{nav}</nav></main></body></html>')
+
+
 def build() -> None:
     DOCS.mkdir(exist_ok=True)
     pages = sorted(int(p.stem[1:]) for p in TEXT.glob("p*.txt"))
-    nav = " ".join(f'<a href="#p{p}">{p}</a>' for p in pages)
-    parts = []
-    for p in pages:
-        lines = [ln for ln in (TEXT / f"p{p:03d}.txt").read_text(encoding="utf-8").splitlines() if ln.strip()]
-        scan = f"https://archive.org/details/{ITEM}/page/n{leaf(p)}/mode/1up"
-        rows = []
-        for i, ln in enumerate(lines, 1):
-            hl = ' class="hl"' if p == 128 and 18 <= i <= 23 else ""
-            # Hebrew letters on the left, the Syriac original on the right, the line number at the far right
-            rows.append(f'<tr{hl}><td class="heb" lang="he">{html.escape(to_hebrew(ln))}</td>'
-                        f'<td class="syr" lang="syr">{html.escape(ln)}</td><td class="n">{i}</td></tr>')
-        parts.append(f'<h2 id="p{p}">Page {p}</h2><div class="cap">{len(lines)} lines as read by Kraken (the page header is '
-                     f'line 1; Bedjan\'s notes are at the foot) · <a href="{scan}">scan, leaf {leaf(p)}</a></div>'
-                     f'<table class="lines"><tbody>{"".join(rows)}</tbody></table>')
-    page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Barhebraeus Chronography</title>
-<meta name="description" content="Pilot OCR of Bedjan's edition of Barhebraeus' Chronicon Syriacum (1890), with a transliteration into Hebrew letters.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Syriac+Eastern&family=Noto+Serif+Hebrew&display=swap" rel="stylesheet">
-<style>{CSS}</style></head><body><main>
+    for k, p in enumerate(pages):
+        prev = pages[k - 1] if k else None
+        nxt = pages[k + 1] if k + 1 < len(pages) else None
+        (DOCS / f"p{p:03d}.html").write_text(page_html(p, prev, nxt), encoding="utf-8")
+    links = " ".join(f'<a href="p{p:03d}.html">{p}</a>' for p in pages)
+    index = HEAD.format(title="Barhebraeus Chronography", css=CSS) + f"""
 <h1>Barhebraeus, <i>Chronography</i> (ed. Bedjan, 1890)</h1>
-<p class="muted">Pilot, 20-Nov-2026 · pp. {pages[0]}–{pages[-1]} of about 600 · machine reading, not proofread</p>
+<p class="muted">{len(pages)} of 599 pages · machine reading, not proofread · 20-Nov-2026</p>
 <p>The secular part of the history of Gregory Barhebraeus (1226–1286), in Paul Bedjan's vocalised edition, <i>Gregorii
 Barhebraei Chronicon Syriacum</i> (Paris 1890), from the <a href="https://archive.org/details/{ITEM}">University of Toronto scan</a>.
 The Syriac was read by <a href="https://github.com/mittagessen/kraken">Kraken</a> with Beth Mardutho's
-<a href="https://bethmardutho.org/qoruyo/">Qoruyo</a> models for printed East Syriac (CC BY 4.0). The left column gives the same
-words in Hebrew letters, by a fixed letter table (one letter for one consonant; vowels left out), for readers of Hebrew and Aramaic.</p>
-<p>How good is it? On p. 128 (highlighted: the plague of locusts of the year 1095 of the Greeks, AD 784) the reading was compared
-with a text of the same passage made from two other prints in another script: 55 of 58 words were the same. The vowel points, the
-page headers and the notes have not been checked. Method and code:
+<a href="https://bethmardutho.org/qoruyo/">Qoruyo</a> models for printed East Syriac (CC BY 4.0). On each page the Syriac is on the
+right, and on the left are the same words in Hebrew letters, by a fixed letter table (one letter for one consonant; vowels left out),
+for readers of Hebrew and Aramaic.</p>
+<p>How good is it? On <a href="p128.html">p. 128</a> (highlighted: the plague of locusts of the year 1095 of the Greeks, AD 784) the
+reading was compared with a text of the same passage made from two other prints in another script: 55 of 58 words were the same. The
+vowel points, the page headers and the notes have not been checked. Method and code:
 <a href="https://github.com/EzraBrand/barhebraeus-chronography">github.com/EzraBrand/barhebraeus-chronography</a>.</p>
-<nav class="pages">{nav}</nav>
-{"".join(parts)}
+<h2>Pages</h2><nav class="pages">{links}</nav>
 </main></body></html>"""
-    (DOCS / "index.html").write_text(page, encoding="utf-8")
+    (DOCS / "index.html").write_text(index, encoding="utf-8")
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
-    print("wrote docs/index.html,", len(pages), "pages")
+    print("wrote docs/index.html and", len(pages), "page files")
 
 
 if __name__ == "__main__":

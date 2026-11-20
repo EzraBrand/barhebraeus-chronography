@@ -4,3 +4,6 @@ __pycache__/
 data/raw/*.jpg
 data/raw/*.json
 logs_*.txt
+logs/
+data/raw/jp2/
+data/raw/*.zip
