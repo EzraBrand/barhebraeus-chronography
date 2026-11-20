@@ -47,12 +47,12 @@ p,li{max-width:46rem} .muted{color:var(--muted)} a{color:var(--accent)}
 nav.pages{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0} nav.pages a{padding:.15rem .5rem;border:1px solid var(--line);border-radius:4px;text-decoration:none}
 table.lines{width:100%;border-collapse:collapse;background:var(--card)}
 table.lines td{border-bottom:1px solid var(--line);padding:.35rem .6rem;vertical-align:top}
-td.n{color:var(--muted);font:12px/1.9 system-ui,sans-serif;width:2.5rem;text-align:right}
-td.syr{font-family:"Noto Sans Syriac Eastern","Noto Sans Syriac",serif;font-size:1.35rem;line-height:2.1;direction:rtl;text-align:right;width:52%}
+td.n{color:var(--muted);font:12px/1.9 system-ui,sans-serif;width:2.5rem;text-align:left}
+td.syr{font-family:"Noto Sans Syriac Eastern","Noto Sans Syriac",serif;font-size:1.35rem;line-height:2.1;direction:rtl;text-align:right;width:52%;border-left:1px solid var(--line)}
 td.heb{font-family:"Noto Serif Hebrew","SBL Hebrew",serif;font-size:1.15rem;line-height:2.1;direction:rtl;text-align:right;color:var(--fg)}
 tr.hl td{background:rgba(226,160,107,.12)}
 .cap{font:13px/1.5 system-ui,sans-serif;color:var(--muted);margin:.3rem 0 .8rem}
-@media (max-width:640px){table.lines,table.lines tbody,table.lines tr,table.lines td{display:block;width:100%}td.n{text-align:left;width:auto;padding-bottom:0}td.syr{border-bottom:none}}
+@media (max-width:640px){table.lines,table.lines tbody,table.lines tr,table.lines td{display:block;width:100%}td.n{text-align:right;width:auto}td.heb{border-bottom:none}}
 """
 
 
@@ -67,8 +67,9 @@ def build() -> None:
         rows = []
         for i, ln in enumerate(lines, 1):
             hl = ' class="hl"' if p == 128 and 18 <= i <= 23 else ""
-            rows.append(f'<tr{hl}><td class="n">{i}</td><td class="syr" lang="syr">{html.escape(ln)}</td>'
-                        f'<td class="heb" lang="he">{html.escape(to_hebrew(ln))}</td></tr>')
+            # Hebrew letters on the left, the Syriac original on the right, the line number at the far right
+            rows.append(f'<tr{hl}><td class="heb" lang="he">{html.escape(to_hebrew(ln))}</td>'
+                        f'<td class="syr" lang="syr">{html.escape(ln)}</td><td class="n">{i}</td></tr>')
         parts.append(f'<h2 id="p{p}">Page {p}</h2><div class="cap">{len(lines)} lines as read by Kraken (the page header is '
                      f'line 1; Bedjan\'s notes are at the foot) · <a href="{scan}">scan, leaf {leaf(p)}</a></div>'
                      f'<table class="lines"><tbody>{"".join(rows)}</tbody></table>')
@@ -83,7 +84,7 @@ def build() -> None:
 <p>The secular part of the history of Gregory Barhebraeus (1226–1286), in Paul Bedjan's vocalised edition, <i>Gregorii
 Barhebraei Chronicon Syriacum</i> (Paris 1890), from the <a href="https://archive.org/details/{ITEM}">University of Toronto scan</a>.
 The Syriac was read by <a href="https://github.com/mittagessen/kraken">Kraken</a> with Beth Mardutho's
-<a href="https://bethmardutho.org/qoruyo/">Qoruyo</a> models for printed East Syriac (CC BY 4.0). The second column gives the same
+<a href="https://bethmardutho.org/qoruyo/">Qoruyo</a> models for printed East Syriac (CC BY 4.0). The left column gives the same
 words in Hebrew letters, by a fixed letter table (one letter for one consonant; vowels left out), for readers of Hebrew and Aramaic.</p>
 <p>How good is it? On p. 128 (highlighted: the plague of locusts of the year 1095 of the Greeks, AD 784) the reading was compared
 with a text of the same passage made from two other prints in another script: 55 of 58 words were the same. The vowel points, the
