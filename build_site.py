@@ -52,7 +52,7 @@ td.syr{font-family:"Noto Sans Syriac Eastern","Noto Sans Syriac",serif;font-size
 td.heb{font-family:"Noto Serif Hebrew","SBL Hebrew",serif;font-size:1.15rem;line-height:2.1;direction:rtl;text-align:right;color:var(--fg)}
 tr.hl td{background:rgba(226,160,107,.12)}
 .cap{font:13px/1.5 system-ui,sans-serif;color:var(--muted);margin:.3rem 0 .8rem}
-@media (max-width:640px){table.lines,table.lines tbody,table.lines tr,table.lines td{display:block;width:100%}td.n{text-align:right;width:auto}td.heb{border-bottom:none}}
+@media (max-width:640px){table.lines,table.lines tbody{display:block;width:100%}table.lines tr{display:flex;flex-direction:column;border-bottom:1px solid var(--line)}table.lines td{display:block;width:100%;border:none}td.n{order:0;text-align:right;width:auto;padding-bottom:0}td.syr{order:1;border-left:none}td.heb{order:2;padding-top:0;color:var(--muted)}}
 """
 
 
@@ -66,7 +66,11 @@ HEAD = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name=
 
 def page_html(p: int, prev: int | None, nxt: int | None) -> str:
     lines = [ln for ln in (TEXT / f"p{p:03d}.txt").read_text(encoding="utf-8").splitlines() if ln.strip()]
-    scan = f"https://archive.org/details/{ITEM}/page/n{leaf(p)}/mode/1up"
+    # The archive.org viewer skips leaf 0 (the cover), so its index is leaf - 1 (checked 20-Nov-2026: n604 = leaf 605,
+    # the preface). The image link gives the leaf itself.
+    scan = f"https://archive.org/details/{ITEM}/page/n{leaf(p) - 1}/mode/1up"
+    img = (f"https://archive.org/download/{ITEM}/{ITEM}_jp2.zip/{ITEM}_jp2%2F{ITEM}_{leaf(p):04d}.jp2"
+           f"&ext=jpg&reduce=1")
     rows = []
     for i, ln in enumerate(lines, 1):
         hl = ' class="hl"' if p == 128 and 18 <= i <= 23 else ""
@@ -78,7 +82,7 @@ def page_html(p: int, prev: int | None, nxt: int | None) -> str:
             f'<p class="muted"><a href="index.html">Barhebraeus, <i>Chronography</i> (ed. Bedjan, 1890)</a></p>'
             f'<nav class="pages">{nav}</nav><h2 id="p{p}">Page {p}</h2>'
             f'<div class="cap">{len(lines)} lines as read by Kraken, not proofread (the page header is line 1; Bedjan&#39;s notes '
-            f'are at the foot) · <a href="{scan}">scan, leaf {leaf(p)}</a></div>'
+            f'are at the foot) · <a href="{scan}">scan in the viewer</a> · <a href="{img}">page image (leaf {leaf(p)})</a></div>'
             f'<table class="lines"><tbody>{"".join(rows)}</tbody></table><nav class="pages">{nav}</nav></main></body></html>')
 
 
