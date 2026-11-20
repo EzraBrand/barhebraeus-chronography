@@ -8,6 +8,10 @@ no Unicode text of this edition is online: the archive.org OCR of the BYU scan i
 The method comes from the Bochart project ([bochart-hierozoicon](https://github.com/EzraBrand/bochart-hierozoicon),
 `SYRIAC.md`): vision LLMs cannot read a long Syriac text, but Kraken with Beth Mardutho's Qoruyo models can.
 
+**Read it:** https://ezrabrand.github.io/barhebraeus-chronography/ (each page line by line: the Syriac as Kraken
+read it, and the same words in Hebrew letters; `uv run build_site.py` writes `docs/`). The Hebrew letters come from a
+fixed table (the one of the Bochart project: one letter per consonant, final forms at word end, vowels left out; ܤ = ס).
+
 ## Source
 
 - Scan: University of Toronto (Robarts), archive.org item
