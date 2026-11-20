@@ -63,6 +63,24 @@ at the end. P. 1 also has an English translation per segment (`data/translation/
 text, God addressed with modern You/Your, not checked by a Syriacist): `build_site.py` adds an English column to any page
 that has such a file.
 
+## Translation model test (20-Nov-2026)
+
+`translate_test.py`: pp. 1 (the preface; reference: the pilot translation), 128 (the locusts; reference: Rosenmüller's
+Latin) and 250 (narrative: Romanus Diogenes after Manzikert), 132 segments, one call per page, through OpenRouter.
+Accuracy judged by reading the outputs against the Syriac and the references. Total cost of the test: $0.26.
+
+| model | $ per 1,000 segments | s per page | accuracy |
+|---|---|---|---|
+| Gemini 3.8 Flash | 0.10 | 6 | as good as Opus; marks OCR doubts usefully ("[1095 {OCR: 1025}]", "laid eggs {lit. cast seed}") |
+| Claude Haiku 5.5 | 0.12 | 45 | **not usable**: invents ("a fierce frost" for the locusts, "Baghdad", "the Manichaeans") |
+| Gemini 4 Argon | 0.25 | 12 | good; more {OCR?} flags |
+| GPT-6.1 Sol | 0.37 | 14 | good; some free renderings ("the virtues it enumerates") |
+| Claude Sonnet 5.5 | 0.37 | 8 | weak on the preface; lost the segment alignment on p. 250 |
+| Claude Opus 5.5 | 0.76 | 10 | good; one wrong word on p. 250 (ܢܦܪܣܝܘܗܝ "separate" for "expose") where Flash and Argon were right |
+
+**Choice: Gemini 3.8 Flash**, about $3 for the whole book (about 30,000 segments), about an hour. A second reading by
+Argon or Opus only for pages with many {OCR?} marks.
+
 ## To do (later, not now)
 
 - **English translation of the other pages**, segment by segment, in the format of `data/translation/p001.json` (one entry
