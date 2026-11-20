@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+# page images: fetched from archive.org (see README), not stored here
+data/raw/*.jpg
+data/raw/*.json
+logs_*.txt
