@@ -83,9 +83,10 @@ Argon or Opus only for pages with many {OCR?} marks.
 
 ## To do (later, not now)
 
-- **English translation of the other pages**, segment by segment, in the format of `data/translation/p001.json` (one entry
-  per segment of `segments.py`, `{OCR: ...}` for doubtful readings, modern You/Your for God). Check a sample against Budge's
-  translation (1932) first. The OCR fixes below come before it, because a segment split changes when the text changes.
+- **English translation**: done in a first machine version on 20-Nov-2026 (`translate_book.py`: Gemini 3.8 Flash, $2.78 for
+  589 pages; pp. 59, 583 and 593-599 by Gemini 4 Argon, $0.10, because Flash returned nothing for p. 59 and its safety filter
+  refused p. 583). To do: check a sample against Budge's translation (1932); translate again after the OCR fixes (delete
+  the page's `data/translation/pNNN.json`; a page whose segments no longer match is shown without English).
 - **The first letter of a line**: Kraken often drops the rightmost letter of a printed line (p. 1: ܕ for ܚܕ, ܒ̈ܢܐ for ܙܒ̈ܢܐ,
   ܕܝܢܬܐ for ܡܕܝܢܬܐ). Measured with `qa_words.py` on 460 pages: 1.2% of line-initial words look like a frequent word without
   its first letter, against 0.28% in mid-line (a lower bound: only words whose full form is frequent are found;
