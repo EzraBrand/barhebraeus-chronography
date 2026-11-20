@@ -69,7 +69,20 @@ that has such a file.
   per segment of `segments.py`, `{OCR: ...}` for doubtful readings, modern You/Your for God). Check a sample against Budge's
   translation (1932) first. The OCR fixes below come before it, because a segment split changes when the text changes.
 - **The first letter of a line**: Kraken often drops the rightmost letter of a printed line (p. 1: ܕ for ܚܕ, ܒ̈ܢܐ for ܙܒ̈ܢܐ,
-  ܕܝܢܬܐ for ܡܕܝܢܬܐ). Try a wider line polygon at the right edge (segmentation padding) and measure on p. 1 and p. 128.
+  ܕܝܢܬܐ for ܡܕܝܢܬܐ). Measured with `qa_words.py` on 460 pages: 1.2% of line-initial words look like a frequent word without
+  its first letter, against 0.28% in mid-line (a lower bound: only words whose full form is frequent are found;
+  `data/qa/line_start.tsv`). The letter is clear in the print, and more padding (`ocr --pad 48`) does not help: the letter
+  is then read, but wrongly (ܝܕ for ܚܕ). The Serto model did the same on Bochart p. 283 (ܟܫܢܬ for ܒܫܢܬ). Likely fix:
+  fine-tune the Qoruyo model (`ketos train`) on a few hundred corrected lines; a first set of corrections can come from
+  `line_start.tsv`, where the full word is unique.
+- **Suspect words**: `data/qa/suspects.tsv` lists 3,457 words seen once with a frequent form one letter away; 1,685 of them
+  differ by one changed letter (the rest are mostly prefixes and endings, i.e. grammar). A random sample of 12 looked
+  about half real errors (ܘܬܪܝܨ for ܘܬܪܝܢ, ܐܩܝܗ for ܐܩܝܡ, ܩܟܒ for ܩܪܒ) and half valid forms (ܕܬܒܥ, ܠܚܡܝ). To read them on the
+  scan, run Kraken with ALTO output (`-a`), which keeps the line boxes; cutting lines by projection did not match Kraken's
+  line order (the counts differ by up to 6 lines a page).
+- **A second edition as a check**: Bruns-Kirsch 1789 (archive.org `ChroniconSyriacum`, "Chronicon_Syriacum 2", Serto)
+  has the whole chronicle; Kraken's Serto model reads it, and the two readings can be aligned paragraph by paragraph.
+  Where both editions agree, the text is right with high probability; this is the strongest check available.
 - **Page header and page number**: on the uncropped JPEG 2000 images the facing page shows through above the header
   (p. 30: the header read as the book title, the page number as "86"). Drop the first line (or two) of each page before
   the split, after a check on a sample.

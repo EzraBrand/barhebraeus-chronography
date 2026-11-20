@@ -7,3 +7,5 @@ logs_*.txt
 logs/
 data/raw/jp2/
 data/raw/*.zip
+data/test/
+data/qa/sample_sheet.jpg
