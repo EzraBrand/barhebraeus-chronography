@@ -55,6 +55,26 @@ hand). Compared on consonants (vowel points and seyame removed; ܤ counted as ܣ
 Other errors seen on a read-through of p. 128: the year digits (Bedjan's "1095" read as 1025), a final punctuation
 mark read as ؟. The vowel points have not been checked yet.
 
+## Reader layout (20-Nov-2026)
+
+Each page is split at its punctuation (`.` and `:`; `segments.py`), not by printed line: one row per phrase, Hebrew letters on
+the left, the Syriac on the right (on a phone: Syriac first). Bedjan's notes (lines that begin with a note number) come
+at the end. P. 1 also has an English translation per segment (`data/translation/p001.json`, by Claude from the OCR
+text, God addressed with modern You/Your, not checked by a Syriacist): `build_site.py` adds an English column to any page
+that has such a file.
+
+## To do (later, not now)
+
+- **English translation of the other pages**, segment by segment, in the format of `data/translation/p001.json` (one entry
+  per segment of `segments.py`, `{OCR: ...}` for doubtful readings, modern You/Your for God). Check a sample against Budge's
+  translation (1932) first. The OCR fixes below come before it, because a segment split changes when the text changes.
+- **The first letter of a line**: Kraken often drops the rightmost letter of a printed line (p. 1: ܕ for ܚܕ, ܒ̈ܢܐ for ܙܒ̈ܢܐ,
+  ܕܝܢܬܐ for ܡܕܝܢܬܐ). Try a wider line polygon at the right edge (segmentation padding) and measure on p. 1 and p. 128.
+- **Page header and page number**: on the uncropped JPEG 2000 images the facing page shows through above the header
+  (p. 30: the header read as the book title, the page number as "86"). Drop the first line (or two) of each page before
+  the split, after a check on a sample.
+- **Year digits** (p. 128: "1095" read as "1025") and the vowel points: not checked yet.
+
 ## Next steps
 
 1. **Scale.** 600 pages at about one minute a page is about 10 hours of CPU: run in the background, 2-3 processes,

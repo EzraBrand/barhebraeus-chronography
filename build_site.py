@@ -89,12 +89,20 @@ def page_html(p: int, prev: int | None, nxt: int | None) -> str:
         unit = (f"{len(segs)} segments, split at the punctuation (. and :), with a pilot English translation by Claude from the "
                 f"OCR text (not checked by a Syriacist); Bedjan&#39;s notes at the end")
     else:
-        unit = f"{len(lines)} lines (the page header is line 1; Bedjan&#39;s notes are at the foot)"
-    for i, ln in enumerate(lines if not tr_file.exists() else [], 1):
-        hl = ' class="hl"' if p == 128 and 18 <= i <= 23 else ""
-        # Hebrew letters on the left, the Syriac original on the right, the line number at the far right
-        rows.append(f'<tr{hl}><td class="heb" lang="he">{html.escape(to_hebrew(ln))}</td>'
-                    f'<td class="syr" lang="syr">{html.escape(ln)}</td><td class="n">{i}</td></tr>')
+        # every page (20-Nov-2026): split at the punctuation, Hebrew letters on the left, the Syriac on the right
+        segs, notes = segments(p)
+        unit = (f"{len(segs)} segments, split at the punctuation (. and :); the page header is in the first segment, "
+                f"Bedjan&#39;s notes at the end")
+        on = False
+        for i, s in enumerate(segs + notes, 1):
+            key = MARK.sub("", s)
+            if p == 128 and "ܐܨܗ" in key:
+                on = True  # the plague of locusts of AG 1095 (the check of the pilot)
+            hl = ' class="hl"' if on else ""
+            if p == 128 and "ܠܡܥܪܒܐ" in key:
+                on = False
+            rows.append(f'<tr{hl}><td class="heb" lang="he">{html.escape(to_hebrew(s))}</td>'
+                        f'<td class="syr" lang="syr">{html.escape(s)}</td><td class="n">{i if i <= len(segs) else "note"}</td></tr>')
     nav = (f'<a href="p{prev:03d}.html">&larr; p. {prev}</a>' if prev else "") + ' <a href="index.html">contents</a> ' +           (f'<a href="p{nxt:03d}.html">p. {nxt} &rarr;</a>' if nxt else "")
     return (HEAD.format(title=f"Barhebraeus Chronography, p. {p}", css=CSS) +
             f'<p class="muted"><a href="index.html">Barhebraeus, <i>Chronography</i> (ed. Bedjan, 1890)</a></p>'
