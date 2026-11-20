@@ -6,9 +6,12 @@ syriac_to_hebrew): one Hebrew letter per Syriac consonant, final forms at the en
 marks left out. Added here: ܤ (final semkath of the East Syriac type) = ס. Digits and punctuation are kept.
 """
 import html
+import json
 import re
 import sys
 from pathlib import Path
+
+from segments import segments
 
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = Path(__file__).resolve().parent
@@ -49,10 +52,11 @@ table.lines{width:100%;border-collapse:collapse;background:var(--card)}
 table.lines td{border-bottom:1px solid var(--line);padding:.35rem .6rem;vertical-align:top}
 td.n{color:var(--muted);font:12px/1.9 system-ui,sans-serif;width:2.5rem;text-align:left}
 td.syr{font-family:"Noto Sans Syriac Eastern","Noto Sans Syriac",serif;font-size:1.35rem;line-height:2.1;direction:rtl;text-align:right;width:52%;border-left:1px solid var(--line)}
+td.en{font-size:1rem;line-height:1.6;width:30%;color:var(--fg)}
 td.heb{font-family:"Noto Serif Hebrew","SBL Hebrew",serif;font-size:1.15rem;line-height:2.1;direction:rtl;text-align:right;color:var(--fg)}
 tr.hl td{background:rgba(226,160,107,.12)}
 .cap{font:13px/1.5 system-ui,sans-serif;color:var(--muted);margin:.3rem 0 .8rem}
-@media (max-width:640px){table.lines,table.lines tbody{display:block;width:100%}table.lines tr{display:flex;flex-direction:column;border-bottom:1px solid var(--line)}table.lines td{display:block;width:100%;border:none}td.n{order:0;text-align:right;width:auto;padding-bottom:0}td.syr{order:1;border-left:none}td.heb{order:2;padding-top:0;color:var(--muted)}}
+@media (max-width:640px){table.lines,table.lines tbody{display:block;width:100%}table.lines tr{display:flex;flex-direction:column;border-bottom:1px solid var(--line)}table.lines td{display:block;width:100%;border:none}td.n{order:0;text-align:right;width:auto;padding-bottom:0}td.syr{order:1;border-left:none}td.heb{order:2;padding-top:0;color:var(--muted)}td.en{order:3;width:100%;padding-top:0}}
 """
 
 
@@ -72,7 +76,21 @@ def page_html(p: int, prev: int | None, nxt: int | None) -> str:
     img = (f"https://archive.org/download/{ITEM}/{ITEM}_jp2.zip/{ITEM}_jp2%2F{ITEM}_{leaf(p):04d}.jp2"
            f"&ext=jpg&reduce=1")
     rows = []
-    for i, ln in enumerate(lines, 1):
+    tr_file = ROOT / "data" / "translation" / f"p{p:03d}.json"
+    if tr_file.exists():
+        # pilot (20-Nov-2026): the page split at its punctuation (segments.py), with an English translation per segment
+        tr = json.loads(tr_file.read_text(encoding="utf-8"))
+        segs, notes = segments(p)
+        assert len(segs) == len(tr["segments"]), f"p. {p}: {len(segs)} segments, {len(tr['segments'])} translations"
+        for i, (s, en) in enumerate(list(zip(segs, tr["segments"])) + list(zip(notes, tr.get("notes", []))), 1):
+            rows.append(f'<tr><td class="en">{html.escape(en)}</td><td class="heb" lang="he">{html.escape(to_hebrew(s))}</td>'
+                        f'<td class="syr" lang="syr">{html.escape(s)}</td><td class="n">{i if i <= len(segs) else "note"}</td></tr>')
+        lines = segs
+        unit = (f"{len(segs)} segments, split at the punctuation (. and :), with a pilot English translation by Claude from the "
+                f"OCR text (not checked by a Syriacist); Bedjan&#39;s notes at the end")
+    else:
+        unit = f"{len(lines)} lines (the page header is line 1; Bedjan&#39;s notes are at the foot)"
+    for i, ln in enumerate(lines if not tr_file.exists() else [], 1):
         hl = ' class="hl"' if p == 128 and 18 <= i <= 23 else ""
         # Hebrew letters on the left, the Syriac original on the right, the line number at the far right
         rows.append(f'<tr{hl}><td class="heb" lang="he">{html.escape(to_hebrew(ln))}</td>'
@@ -81,8 +99,7 @@ def page_html(p: int, prev: int | None, nxt: int | None) -> str:
     return (HEAD.format(title=f"Barhebraeus Chronography, p. {p}", css=CSS) +
             f'<p class="muted"><a href="index.html">Barhebraeus, <i>Chronography</i> (ed. Bedjan, 1890)</a></p>'
             f'<nav class="pages">{nav}</nav><h2 id="p{p}">Page {p}</h2>'
-            f'<div class="cap">{len(lines)} lines as read by Kraken, not proofread (the page header is line 1; Bedjan&#39;s notes '
-            f'are at the foot) · <a href="{scan}">scan in the viewer</a> · <a href="{img}">page image (leaf {leaf(p)})</a></div>'
+            f'<div class="cap">As read by Kraken, not proofread: {unit} · <a href="{scan}">scan in the viewer</a> · <a href="{img}">page image (leaf {leaf(p)})</a></div>'
             f'<table class="lines"><tbody>{"".join(rows)}</tbody></table><nav class="pages">{nav}</nav></main></body></html>')
 
 
